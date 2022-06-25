@@ -1,3 +1,4 @@
+release: python manage.py migrate
 release: python manage.py makemigrations messanger
 release: python manage.py migrate
 
