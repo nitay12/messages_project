@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
@@ -71,5 +71,7 @@ def get_delete_message(request, pk):
         serializer = MessageSerializer(message)
         return Response(serializer.data)
     elif request.method == 'DELETE':
+        if (request.user != message.receiver) | (request.user != message.sender):
+            return Response(status=status.HTTP_403_FORBIDDEN)
         message.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
