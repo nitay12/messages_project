@@ -1,3 +1,5 @@
+from datetime import datetime, date
+
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from rest_framework import status
@@ -20,7 +22,7 @@ def messages(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     if request.method == 'GET':
-        return redirect('/messages/' + request.user.username)
+        return redirect('user_messages', request.user.username)
 
 
 @api_view(['GET'])
@@ -61,6 +63,7 @@ def get_delete_message(request, pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
         message.read = True
+        message.read_at = datetime(date)
         message.save()
         serializer = MessageSerializer(message)
         return Response(serializer.data)
