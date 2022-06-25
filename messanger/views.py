@@ -62,9 +62,12 @@ def get_delete_message(request, pk):
     except Message.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
-        message.read = True
-        message.read_at = datetime(date)
-        message.save()
+        if request.user != message.receiver:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        if not message.read:
+            message.read = True
+            message.read_at = datetime.now()
+            message.save()
         serializer = MessageSerializer(message)
         return Response(serializer.data)
     elif request.method == 'DELETE':
