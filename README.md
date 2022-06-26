@@ -10,14 +10,19 @@ A simple Django rest api app that manages messages between users.
 ### Security & Authentication
 - The whole app requires login, the authentication and authorization made with JWT.
 
-###
-You can test with this test-users:
-
 ### Databse
 - Development - Mysql
 - Production - Postgresql
 
+### Tests
+You can test login with the test-users:<br>
+(password = username+_pass eg. elena | elena_pass)
+- elena
+- karin
+- eden
+- liroz
 ### Links
+- [Working server](https://herolo-messanger.herokuapp.com/)
 - Browse the docs via swagger-ui
 - Fork the Postman collection for testing
 
