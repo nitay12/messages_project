@@ -6,8 +6,8 @@ messages between users.'
   version: '1.0.0'
 security:
   - BearerAuth:
-    - read
-    - write
+      - read
+      - write
 
 paths:
   /api/v1/messages/:
@@ -61,41 +61,6 @@ paths:
           $ref: '#/components/responses/401'
       tags:
         - messages
-  /api/v1/messages/{id}:
-    get:
-      operationId: read-message
-      description: Mark a message as a read message.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: 'Message id'
-          schema:
-            type: string
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/MessageResponse'
-          description: 'The message mark as read and the read_at field populated by the current time'
-      tags:
-        - messages
-    delete:
-      operationId: delete-message
-      description: Delete a message.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: 'Message id'
-          schema:
-            type: string
-      responses:
-        '204':
-          description: 'The message was successfully deleted'
-      tags:
-        - messages
   /api/v1/messages/{username}:
     get:
       operationId: retrieve-all-user-messages
@@ -124,6 +89,51 @@ paths:
           description: 'Success'
         '400':
           $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+      tags:
+        - messages
+  /api/v1/messages/{username}/{id}:
+    get:
+      operationId: read-message
+      description: Mark a message as a read message.
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: 'Username'
+          schema:
+            type: string
+        - name: id
+          in: path
+          required: true
+          description: 'Message id'
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: 'Marked as read, read_at field populated by the current time'
+      tags:
+        - messages
+    delete:
+      operationId: delete-message
+      description: Delete a message.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 'Message id'
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'Successfully deleted'
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -194,6 +204,7 @@ components:
     BearerAuth:
       type: http
       scheme: bearer
+      bearerFormat: JWT
   schemas:
     TokenObtainPair:
       type: object

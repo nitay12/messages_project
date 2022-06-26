@@ -53,11 +53,14 @@ def all_user_messages(request, username):
 
 
 @api_view(['GET', 'DELETE'])
-def get_delete_message(request, pk):
+def get_delete_message(request, username, pk):
     """
     Read or delete a message.
     """
     try:
+        user = User.objects.get(username=username)
+        if request.user != user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         message = Message.objects.get(pk=pk)
     except Message.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
