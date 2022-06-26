@@ -1,0 +1,251 @@
+openapi: 3.0.2
+info:
+  title: 'Herolo Messages Assignment'
+  summary: 'Home assignment, A simple rest API backend system that is responsible for handling
+messages between users.'
+  version: '1.0.0'
+security:
+  - BearerAuth:
+    - read
+    - write
+
+paths:
+  /api/v1/messages/:
+    get:
+      operationId: list-messages
+      description: Get all user messages (Redirect to /messages/:username)
+      parameters: [ ]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageResponse'
+            application/x-www-form-urlencoded:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageResponse'
+          description: 'OK'
+        '401':
+          $ref: '#/components/responses/401'
+      tags:
+        - messages
+    post:
+      operationId: create-message
+      description: Post a new message (sender detected by JWT)
+      parameters: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostMessage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PostMessage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PostMessage'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: 'The created message'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+      tags:
+        - messages
+  /api/v1/messages/{id}:
+    get:
+      operationId: read-message
+      description: Mark a message as a read message.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 'Message id'
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+          description: 'The message mark as read and the read_at field populated by the current time'
+      tags:
+        - messages
+    delete:
+      operationId: delete-message
+      description: Delete a message.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 'Message id'
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 'The message was successfully deleted'
+      tags:
+        - messages
+  /api/v1/messages/{username}:
+    get:
+      operationId: retrieve-all-user-messages
+      description: Get all user messages
+      parameters:
+        - name: username
+          in: path
+          required: true
+          description: 'Username'
+          schema:
+            type: string
+        - name: read
+          in: query
+          required: false
+          description: 'Filter messages by read (true/false)'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageResponse'
+          description: 'Success'
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+      tags:
+        - messages
+  /api/v1/login/:
+    post:
+      operationId: createTokenObtainPair
+      description: 'Takes a set of user credentials and returns an access and refresh
+        JSON web token pair to prove the authentication of those credentials.'
+      parameters: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+      tags:
+        - auth
+  /api/v1/login/refresh/:
+    post:
+      operationId: createTokenRefresh
+      description: 'Takes a refresh type JSON web token and returns an access type
+        JSON web token if the refresh token is valid.'
+      parameters: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+      tags:
+        - auth
+components:
+  responses:
+    '400':
+      description: 'Bad request, missing required fields etc.'
+    '401':
+      description: 'Unauthorized, If the user  is not logged in'
+    '403':
+      description: 'Forbidden, If the logged in user tries to get another user messages'
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    TokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+      required:
+        - username
+        - password
+    TokenRefresh:
+      type: object
+      properties:
+        refresh:
+          type: string
+        access:
+          type: string
+          readOnly: true
+      required:
+        - refresh
+    PostMessage:
+      type: object
+      properties:
+        receiver:
+          type: integer
+          description: receiver id
+        subject:
+          type: string
+        msg_body:
+          type: string
+      required:
+        - receiver
+        - subject
+        - msg_body
+    MessageResponse:
+      type: object
+      properties:
+        sender:
+          type: integer
+          description: sender id
+        receiver:
+          type: integer
+          description: receiver id
+        subject:
+          type: string
+        msg_body:
+          type: string
+        created_at:
+          type: string
+        read_at:
+          type: string
+        read:
+          type: boolean
