@@ -6,8 +6,8 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from messanger.models import Message
-from messanger.serializers import MessageSerializer
+from messenger.models import Message
+from messenger.serializers import MessageSerializer
 
 
 @api_view(['POST', 'GET'])

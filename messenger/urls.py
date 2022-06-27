@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-from messanger import views
+from messenger import views
 
 urlpatterns = [
     path('', views.messages),
