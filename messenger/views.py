@@ -4,25 +4,24 @@ from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from messenger.models import Message
 from messenger.serializers import MessageSerializer
 
 
-@api_view(['POST', 'GET'])
-def messages(request):
-    """
-    Post a message | Get all user messages(redirect)
-    """
-    if request.method == 'POST':
+class MessagesView(APIView):
+    def get(self, request):
+        return redirect('user_messages', request.user.username)
+
+    def post(self, request):
         serializer = MessageSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(sender=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    if request.method == 'GET':
-        return redirect('user_messages', request.user.username)
 
 
 @api_view(['GET'])
@@ -52,19 +51,12 @@ def all_user_messages(request, username):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(['GET', 'DELETE'])
-def get_delete_message(request, username, pk):
-    """
-    Read or delete a message.
-    """
-    try:
-        user = User.objects.get(username=username)
+class OneMessageView(APIView):
+    def get(self, request, username, pk):
+        user = get_object_or_404(User, username=username)
+        message = get_object_or_404(Message, pk=pk)
         if request.user != user:
             return Response(status=status.HTTP_403_FORBIDDEN)
-        message = Message.objects.get(pk=pk)
-    except Message.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    if request.method == 'GET':
         if request.user != message.receiver:
             return Response(status=status.HTTP_403_FORBIDDEN)
         if not message.read:
@@ -73,7 +65,12 @@ def get_delete_message(request, username, pk):
             message.save()
         serializer = MessageSerializer(message)
         return Response(serializer.data)
-    elif request.method == 'DELETE':
+
+    def delete(self, request, username, pk):
+        user = get_object_or_404(User, username=username)
+        message = get_object_or_404(Message, pk=pk)
+        if request.user != user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         if (request.user != message.receiver) | (request.user != message.sender):
             return Response(status=status.HTTP_403_FORBIDDEN)
         message.delete()
